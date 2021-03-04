@@ -1,0 +1,52 @@
+Nume: Tiriplica Vlad
+Grupa: 331CA
+Titlu: Tema 3 APD
+###############################################################################
+SCURTA DESCRIERE A FUNCTIONARII TEMEI:
+- pe nodul master se apeleaza functia master() care creaza numele fisierului
+de iesire si porneste 4 threaduri ce ruleaza functia master_thread_function()
+- functia master_thread_function() face urmatoarle:
+	- parseaza fisierul de intrare cautand cuvintele cheie ce indica unul din
+	cele 3 tipuri de paragrafe. Cand a gasit un astfel de paragraf il va
+	trimite nodului corespunzator care se ocupa de prelucrarea acestuia
+	- cand termina de citit fisierul de intrare va trimite un semnal nodului
+	pentru a ii comunica ca nu mai are nimic de trimis
+	- in a doua parte a functiei se primesc inapoi paragrafele modificate care
+	se stocheaza intr-un vector
+	- la final se scriu paragrafele in ordine in fisierul de iesire. Fiecare
+	paragraf are atasat cu el pozitia initiala in fisierul de intrare, astfel
+	putand fi reconstruita ordinea initiala
+- pe nodurile worker se apeleaza functia worker() care creaza P threaduri, unde
+P este numarul maxim de threaduri disponibile pe sistem. Primului thread ii
+este atasata functia worker_thread_gateway(), iar pe celalate P-1 threaduri va
+executa funcita worker_thread_process()
+- worker_thread_gateway() primeste paragrafele de la nodul master si le 
+stocheaza intr-un vector, asteapta procesarea paragrafelor, iar apoi le trimite
+inapoi catre nodul master
+- worker_thread_process() ia fiecare paragraf din vectorul de paragrafe, iar 
+pentru fiecare paragraf se ocupa de proceasarea liniilor asignate threadului
+curent
+- fiecarui thread care se ocupa de procesare ii sunt asignate liniile in felul
+urmator: thread-ul 1 ia primele 20 de linii, thread-ul 2 ia urmatoarele 20 si
+tot asa pana la thread-ul P-1 (daca nu cumva paragraful s-a terminat mai
+devreme). Daca au mai ramas linii neprocesate, ciclul se reia (thread-ul 1 ia
+urmatoarele 20 de linii, apoi tread-ul 2, etc.) pana se termina paragraful
+- de exemplu, daca avem P = 4 threaduri, dintre care doar 1, 2 si 3 proceseaza
+textul si un paragraf de 90 de linii distributia va fi urmatoarea:
+	- liniile 1-20: procesate de thread-ul 1
+	- liniile 21-40: procesate de thread-ul 2
+	- liniile 41-60: procesate de thread-ul 3
+	- liniile 61-80: procesate de thread-ul 1
+	- liniile 81-90: procesate de thread-ul 2
+- in final flow-ul programului va fi urmatorul:
+	parsarea inputului -> trimiterea paragrafelor catre workeri ->
+procesarea paragrafelor de catre workeri -> receptionarea paragrafelor modificate de la workeri -> scrierea in ordine in fisierul de iesire
+
+DOVADA SCALABILITATII:
+- timpii de rulare a programului secvential:
+test4: 5.0127904415130615 seconds
+test5: 7.219078063964844 seconds
+
+- timpii de rulare a programului paralel:
+test4: 2.2229323387145996 seconds
+test5: 2.9708404541015625 seconds
